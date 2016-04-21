@@ -1,0 +1,93 @@
+(*Convert a string in a list of characters*)
+let rec explode = function
+    | "" -> []
+    | s  -> (String.get s 0) :: explode (String.sub s 1 ((String.length s) - 1));;
+ 
+(* Convert a list of characters to a string *)  
+let rec implode = function
+    | [] -> ""
+    | charlist -> (Char.escaped (List.hd charlist)) ^ (implode (List.tl charlist));;
+ 
+(* Remove a char in a list *)
+let rec remove_char n = function
+    | [] -> []
+    | h :: t -> if n = 0 then t else h :: remove_char (n-1) t;;
+
+(*Given a string, deletes a char one at a time and return all the combinations*)
+(*n =n-essimo carattere da rimuovere*)
+let delete_chars the_string =
+    let rec routine n result =
+        if n >= 0 then
+            routine
+                (n - 1)
+                result @ [
+                        implode
+                            (
+                                remove_char
+                                    n
+                                    (explode the_string)
+                            )
+                ]
+        else
+            result
+    and string_len = (String.length the_string) - 1
+    in routine string_len [];;
+
+(*Swaping all pairs of adiacent characters in a string*)
+(*max_step = numero max di swap che posso fare*)
+(*string.sub = mi da una sottostringa indicando da dove parto e il nr di lettere
+ che deve prendere da li*)
+let swap_chars the_string =
+    let rec routine cur_step result =
+        if cur_step >= 0 then  
+            routine
+                (cur_step - 1)
+                result @ [
+                        (*implode ( *) 
+                            (*explode *)((String.sub the_string 0 (cur_step))
+                            ^
+                            (*[*)
+                                Char.escaped (String.get the_string (cur_step + 1)) ^
+                                Char.escaped (String.get the_string cur_step)
+                            (*]*)
+                            ^
+                            (*explode *) (String.sub the_string (cur_step + 2) ((String.length the_string) - (cur_step + 2)))
+                        (* ) *) )
+                ]
+        else
+            result
+    and max_step = (String.length the_string) - 2
+    in routine max_step [];;
+
+(*successor function*)
+let suxx the_string =
+    delete_chars the_string @ swap_chars the_string;;
+
+
+type ’a graph = Graph of (’a -> ’a list);;  
+exception NotFound;;
+
+let consto lst a =  a::lst;;   
+let succpath succ path =  List.map (consto path) (succ (List.hd path));; 
+
+
+let funbf (Graph succ) p start = 
+ let rec search visited = function 
+   |[] -> raise NotFound  
+   | path::rest -> let a = List.hd path  
+ in if List.mem a visited then search visited rest  
+                          else if p a then path   
+                                      else search (a::visited) (rest@(succ path))  
+ in search [] [start];; 
+
+let bf_search_path (Graph succ) p start =  
+    List.rev (funbf (Graph (succpath succ)) p [start]);; 
+
+
+
+let solve () = bf_search_path (Graph suxx)((=)"ne") "elena";;
+
+solve ();; 
+List.length (solve ());;
+
+
